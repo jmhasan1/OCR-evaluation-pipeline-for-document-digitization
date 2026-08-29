@@ -1,0 +1,36 @@
+# Python caches / compiled files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build / packaging artifacts
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Logs
+*.log
+
+# Generated OCR outputs
+outputs/raw/
+outputs/reports/
+
+# Generated rendered document images
+**/*_rendered/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+
+outputs/raw/*
+outputs/reports/*
+*.log
