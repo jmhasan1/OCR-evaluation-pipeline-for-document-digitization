@@ -1,0 +1,44 @@
+{
+  "benchmark_version": "1.0",
+  "input": {
+    "path": "data\\development\\synthetic_documents\\doc_001\\doc_001.pdf",
+    "document_id": "doc_001",
+    "dpi": 200
+  },
+  "environment": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.13",
+    "paddle": "3.3.0",
+    "paddleocr": "3.7.0",
+    "paddle_cuda_compiled": true
+  },
+  "results": [
+    {
+      "requested_device": "cpu",
+      "resolved_device": "cpu",
+      "status": "ok",
+      "runtime": {
+        "device_requested": "cpu",
+        "device_resolved": "cpu",
+        "gpu_available": false,
+        "gpu_name": null,
+        "paddle": "3.3.0",
+        "paddleocr": "3.7.0"
+      },
+      "warmup_runs": 1,
+      "measured_runs": 3,
+      "page_count": 2,
+      "initialization_seconds": 8.2877,
+      "inference": {
+        "mean_seconds": 126.2645,
+        "median_seconds": 127.226,
+        "min_seconds": 123.1356,
+        "max_seconds": 128.4318,
+        "mean_seconds_per_page": 63.1322,
+        "mean_pages_per_second": 0.01584
+      },
+      "gpu_max_memory_mb": 0.0,
+      "last_run_pages": 2
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "benchmark_version": "1.0",
+  "input": {
+    "path": "data\\development\\synthetic_documents\\doc_001\\doc_001.pdf",
+    "document_id": "doc_001",
+    "dpi": 200
+  },
+  "environment": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.13",
+    "paddle": "3.3.0",
+    "paddleocr": "3.7.0",
+    "paddle_cuda_compiled": true
+  },
+  "results": [
+    {
+      "requested_device": "gpu:0",
+      "resolved_device": "gpu:0",
+      "status": "ok",
+      "runtime": {
+        "device_requested": "gpu:0",
+        "device_resolved": "gpu:0",
+        "gpu_available": true,
+        "gpu_name": "NVIDIA GeForce GTX 1650 Ti",
+        "paddle": "3.3.0",
+        "paddleocr": "3.7.0"
+      },
+      "warmup_runs": 1,
+      "measured_runs": 1,
+      "page_count": 2,
+      "initialization_seconds": 7.1306,
+      "inference": {
+        "mean_seconds": 2.7719,
+        "median_seconds": 2.7719,
+        "min_seconds": 2.7719,
+        "max_seconds": 2.7719,
+        "mean_seconds_per_page": 1.386,
+        "mean_pages_per_second": 0.721523
+      },
+      "gpu_max_memory_mb": 1351.81,
+      "last_run_pages": 2
+    }
+  ]
+}
