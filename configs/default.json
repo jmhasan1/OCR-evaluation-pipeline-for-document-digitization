@@ -1,0 +1,16 @@
+{
+  "ocr": {
+    "engine": "paddleocr",
+    "lang": "en",
+    "device": "cpu",
+    "render_dpi": 200
+  },
+  "paths": {
+    "development_data": "data/development",
+    "assignment_data": "data/assignment",
+    "raw_outputs": "outputs/raw",
+    "reports": "outputs/reports"
+  }
+}
+
+

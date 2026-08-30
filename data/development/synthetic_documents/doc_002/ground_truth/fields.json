@@ -1,0 +1,31 @@
+{
+  "document_id": "doc_002",
+  "document_type": "synthetic_sale_deed",
+  "synthetic": true,
+  "difficulty": "moderate",
+  "fields": {
+    "owner_names": [
+      "Farhan Ahmed"
+    ],
+    "father_husband_names": [
+      "Salim Ahmed"
+    ],
+    "survey_plot_khasra_number": "78/2A",
+    "area": {
+      "value": "1.375",
+      "unit": "Bigha"
+    },
+    "village": "Lakshmipur",
+    "tehsil": "Haripur",
+    "district": "Murshidabad",
+    "registration_number": "REG-2024-07821",
+    "registration_date": "07-08-2024",
+    "mutation_number": "MUT-2024-01976",
+    "mutation_date": "19-08-2024"
+  },
+  "difficulties": [
+    "stamp_overlap",
+    "handwritten_annotation",
+    "mixed_font_sizes"
+  ]
+}

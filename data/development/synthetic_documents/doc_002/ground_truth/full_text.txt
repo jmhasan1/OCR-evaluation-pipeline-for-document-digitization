@@ -1,0 +1,42 @@
+SALE DEED
+SYNTHETIC OCR TEST DOCUMENT — NO LEGAL EFFECT
+
+Date of Execution: 07 August 2024
+
+SELLERS
+1. Smt. Amina Begum, wife of Yusuf Ali.
+2. Rahim Ali, son of Yusuf Ali.
+
+PURCHASER
+Farhan Ahmed, son of Salim Ahmed.
+
+PROPERTY SCHEDULE
+Survey / Plot No.: 78/2A
+Area: 1.375 Bigha
+Village: Lakshmipur
+Tehsil: Haripur
+District: Murshidabad
+
+The property described above is transferred subject to the terms
+and conditions recorded in this synthetic deed.
+
+REGISTRATION AND MUTATION
+Registration No.: REG-2024-07821
+Registration Date: 07-08-2024
+Mutation No.: MUT-2024-01976
+Mutation Date: 19-08-2024
+
+NOTES
+A SAMPLE stamp area is intentionally represented below for robustness testing.
+
+[ SAMPLE STAMP — TEXT MAY OVERLAP IN THE SCANNED VERSION ]
+
+Handwritten test note: Verify plot number.
+
+Boundary information:
+North — Canal
+South — Plot 78/3
+East — Village Path
+West — Plot 78/1
+
+This document is synthetic and was created only to validate the evaluation pipeline.

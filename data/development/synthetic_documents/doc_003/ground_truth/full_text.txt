@@ -1,0 +1,47 @@
+SALE DEED
+SYNTHETIC STRESS-TEST DOCUMENT — NOT A LEGAL RECORD
+
+Execution Date: 21 November 2023
+
+TRANSFEROR / SELLER
+Smt. Nasreen Khatun, wife of Habibur Rahman
+Address: Sonapur, Tehsil Beldanga
+
+TRANSFEREE / PURCHASER
+Md. Imran Hossain, son of Jalal Hossain
+
+LAND PARTICULARS
+Khasra / Survey No.: 304/7B
+Area: 0.875 Hectare
+Village: Sonapur
+Tehsil: Beldanga
+District: Birbhum
+
+IMPORTANT TEST CONDITION
+The following sample seal and annotation are intentionally placed near
+critical fields to simulate difficult scanned-document conditions.
+
+[ SAMPLE SEAL ]
+DOCUMENT VERIFICATION
+OCR TEST
+
+REGISTRATION PARTICULARS
+
+Registration Number: WB-BIR-2023-30477
+Registration Date: 21/11/2023
+Mutation Number: MUT-BIR-23-8871
+Mutation Date: 02/12/2023
+
+HANDWRITTEN TEST ANNOTATION:
+Check Khasra 304/7B before approval.
+
+BOUNDARY DESCRIPTION
+North: Canal and Plot 304/8
+South: Sonapur access road
+East: Plot 305/1
+West: Plot 304/6
+
+The synthetic text intentionally includes numbers, punctuation, abbreviations,
+and nearby annotations to exercise OCR evaluation and critical-field testing.
+
+END OF SYNTHETIC TEST DOCUMENT

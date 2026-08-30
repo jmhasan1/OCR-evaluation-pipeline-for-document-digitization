@@ -1,0 +1,32 @@
+{
+  "document_id": "doc_003",
+  "document_type": "synthetic_sale_deed",
+  "synthetic": true,
+  "difficulty": "stress",
+  "fields": {
+    "owner_names": [
+      "Md. Imran Hossain"
+    ],
+    "father_husband_names": [
+      "Jalal Hossain"
+    ],
+    "survey_plot_khasra_number": "304/7B",
+    "area": {
+      "value": "0.875",
+      "unit": "Hectare"
+    },
+    "village": "Sonapur",
+    "tehsil": "Beldanga",
+    "district": "Birbhum",
+    "registration_number": "WB-BIR-2023-30477",
+    "registration_date": "21/11/2023",
+    "mutation_number": "MUT-BIR-23-8871",
+    "mutation_date": "02/12/2023"
+  },
+  "difficulties": [
+    "seal_overlap",
+    "handwritten_annotation",
+    "numeric_fields",
+    "mixed_spacing"
+  ]
+}

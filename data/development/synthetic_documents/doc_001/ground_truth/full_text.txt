@@ -1,0 +1,37 @@
+SALE DEED
+TEST DOCUMENT — SYNTHETIC DATASET — NOT A LEGAL INSTRUMENT
+
+This Sale Deed is executed on 15 March 2025 at Rampur.
+
+SELLER
+Md. Abdul Rahman, son of Md. Karim, residing at Rampur.
+
+PURCHASER
+Mohammad Hasan, son of Abdul Majid, residing at Rampur.
+
+PROPERTY DETAILS
+Survey Number: 125/3
+Area: 0.125 Acre
+Village: Rampur
+Tehsil: Chandpur
+District: Nadia
+
+The seller hereby transfers the above described property to the purchaser
+for the consideration stated in this deed.
+
+REGISTRATION DETAILS
+
+Registration Number: REG-2025-00125
+Registration Date: 15/03/2025
+Mutation Number: MUT-2025-00481
+Mutation Date: 22/03/2025
+
+BOUNDARIES
+North: Plot 125/4
+South: Village Road
+East: Plot 126/1
+West: Plot 125/2
+
+DECLARATION
+The parties declare that the information in this synthetic test document
+is provided solely for OCR evaluation and contains no real land record.

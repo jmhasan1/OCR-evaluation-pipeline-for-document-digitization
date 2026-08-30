@@ -1,0 +1,27 @@
+{
+  "document_id": "doc_001",
+  "document_type": "synthetic_sale_deed",
+  "synthetic": true,
+  "difficulty": "baseline",
+  "fields": {
+    "owner_names": [
+      "Mohammad Hasan"
+    ],
+    "father_husband_names": [
+      "Abdul Majid"
+    ],
+    "survey_plot_khasra_number": "125/3",
+    "area": {
+      "value": "0.125",
+      "unit": "Acre"
+    },
+    "village": "Rampur",
+    "tehsil": "Chandpur",
+    "district": "Nadia",
+    "registration_number": "REG-2025-00125",
+    "registration_date": "15/03/2025",
+    "mutation_number": "MUT-2025-00481",
+    "mutation_date": "22/03/2025"
+  },
+  "difficulties": []
+}
