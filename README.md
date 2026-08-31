@@ -2,17 +2,19 @@
 
 A development-first evaluation framework for OCR and document-AI systems handling scanned official documents such as sale deeds and land records.
 
-The project is designed around **evaluation rigor rather than OCR accuracy alone**, with emphasis on meaningful metrics, critical-field correctness, adversarial testing, reproducibility, automation, and awareness of document-processing risks.
+The project is designed around **evaluation rigor rather than OCR accuracy alone**, with emphasis on meaningful metrics, critical-field correctness, faithfulness, controlled robustness testing, reproducibility, automation, and awareness of document-processing risks.
 
-> **Important:** `data/development/` contains fictional synthetic documents created only to develop and test the pipeline while the employer-provided samples are unavailable. They are not real land records and must not be presented as employer-provided documents.
+> **Important:** `data/development/` contains fictional synthetic documents created only to develop and test the pipeline. They are not real land records.
+>
+> **Important:** Assignment(Real Users)-provided assignment documents are kept outside version control and are never treated as synthetic ground truth.
 
 ---
 
 ## Current milestone
 
-**Step 3.2 — Critical-field extraction and evaluation**
+**Step 3.5 — Robustness testing and measurable degradation analysis**
 
-The project currently has an end-to-end synthetic validation path:
+The project now has an evaluation stack covering:
 
 ```text
 PDF / image
@@ -21,20 +23,30 @@ OCR
     ↓
 normalized OCR representation
     ↓
+text metrics (CER / WER)
+    ↓
 critical-field extraction
     ↓
 field-level evaluation
     ↓
-structured evaluation results
+faithfulness comparison
+    ↓
+controlled degradation
+    ↓
+robustness analysis
+    ↓
+structured reports
 ```
 
-The implementation deliberately keeps OCR, extraction, and evaluation separated so that failures can be attributed to the appropriate stage.
+The implementation deliberately keeps OCR, extraction, evaluation, degradation, and reporting separated so that failures can be attributed to the appropriate stage.
 
 ---
 
 ## Implemented
 
 ### Step 2 — Project foundation + OCR pipeline
+
+Implemented:
 
 - PDF-to-image rendering
 - PaddleOCR adapter
@@ -44,7 +56,11 @@ The implementation deliberately keeps OCR, extraction, and evaluation separated 
 - Raw OCR JSON output
 - Synthetic development documents for controlled validation
 
+The OCR engine is isolated behind an adapter so alternative OCR engines can be introduced without rewriting the evaluation layer.
+
 ### Step 2.5 — CPU/GPU portability and benchmarking
+
+Implemented:
 
 - Explicit CPU execution
 - Explicit NVIDIA GPU execution
@@ -78,7 +94,7 @@ OCRDocument
 JSON
 ```
 
-The OCR engine is isolated behind an adapter so that alternative OCR engines can be introduced without rewriting the evaluation layer.
+The OCR layer produces a stable internal representation containing document metadata, page text, detected regions, confidence information where available, and execution metadata.
 
 ---
 
@@ -103,15 +119,17 @@ Normalization is intentionally conservative. It removes formatting noise such as
 For example:
 
 ```text
-Reference:  Khasra 54/1
-OCR:        Khasra 541
+Reference: Khasra 54/1
+OCR:       Khasra 541
 ```
 
 The missing `/` remains an evaluation error rather than being silently repaired.
 
+This distinction is important for document identifiers where punctuation and numeric structure may carry meaning.
+
 ### Step 3.2 — Critical-field extraction and evaluation
 
-The pipeline now evaluates fields that are particularly important for document digitization workflows:
+The pipeline evaluates fields that are particularly important for document digitization workflows:
 
 - owner / purchaser names
 - father / husband names
@@ -140,7 +158,7 @@ It supports:
 - whitespace cleanup
 - date-format preservation
 
-The extractor does **not** silently repair corrupted OCR identifiers.
+The extractor does not silently repair corrupted OCR identifiers.
 
 #### Critical-field evaluation
 
@@ -153,23 +171,21 @@ Field evaluation distinguishes:
 
 This prevents a high aggregate score from hiding failures in important document identifiers.
 
-For example, an OCR result changing:
+For example:
 
 ```text
+Reference:
 REG-2025-00125
-```
 
-to:
-
-```text
+OCR:
 REG-2025-0012S
 ```
 
 is treated as a field failure.
 
-### Adversarial testing
+### Adversarial extraction testing
 
-The extraction layer includes regression tests covering cases such as:
+The extraction layer includes regression tests covering:
 
 - corrupted identifiers
 - missing fields
@@ -180,13 +196,205 @@ The extraction layer includes regression tests covering cases such as:
 - preservation of identifier punctuation
 - avoidance of silently "correcting" OCR output
 
-These tests are intended to validate evaluator behavior and failure visibility, not merely maximize extraction success on clean examples.
+These tests validate evaluator behavior and failure visibility, not merely extraction success on clean examples.
+
+### Step 3.3 — Faithfulness / rewrite detection
+
+The project includes a separate faithfulness evaluation layer for comparing source OCR text with downstream document-AI output.
+
+Implemented:
+
+- structured faithfulness result contract
+- source/output text comparison
+- normalized comparison
+- token-level comparison
+- difference reporting
+- human-readable reporting
+- machine-readable reporting
+- adversarial faithfulness tests
+
+The faithfulness layer is deliberately separate from OCR accuracy.
+
+**OCR accuracy:**  
+"Did OCR recognize the source correctly?"
+
+**Faithfulness:**  
+"Does the downstream output remain supported by the source?"
+
+This distinction allows the evaluation framework to identify downstream rewriting or altered information even when the original OCR output itself is not being re-evaluated.
+
+### Step 3.4 — Real-data OCR evaluation
+
+The evaluation workflow has been exercised against the Assignment(Real Users)-provided real documents while keeping those documents outside version control.
+
+Two real assignment PDFs were evaluated:
+
+| Document | Pages |
+|---|---:|
+| `DocScanner Apr 21_ 2026 6-48 PM.pdf` | 22 |
+| `MP22IGR17182025A100906565 (1).pdf` | 31 |
+
+The current OCR outputs provide the following observable signals:
+
+| Document | Pages | Characters | Words | Mean OCR confidence |
+|---|---:|---:|---:|---:|
+| DocScanner | 22 | 3,087 | 616 | 0.5329 |
+| MP22IGR | 31 | 10,990 | 1,991 | 0.6404 |
+
+These measurements are OCR-quality observations, not claims of transcription accuracy.
+
+Authoritative transcriptions or critical-field ground truth are unavailable for the assignment documents. Therefore the project does not claim CER/WER or field-level accuracy for these documents.
+
+The real-data evaluation reports:
+
+- page count
+- character count
+- word count
+- characters/page
+- words/page
+- confidence distributions
+- confidence percentiles
+- low-confidence pages
+- low-confidence regions
+- near-empty pages
+- OCR initialization time
+- OCR inference time
+- throughput
+
+The real-data workflow therefore provides useful evidence about OCR behavior without manufacturing ground truth.
+
+#### Assignment-data handling
+
+Assignment documents are treated as external evaluation material. They are:
+
+- not committed to Git
+- not used as synthetic ground truth
+- not included in the synthetic robustness experiment
+- not represented as authoritative transcriptions unless such ground truth is actually available
+
+### Step 3.5 — Controlled robustness testing
+
+The project includes a deterministic controlled-degradation framework for measuring how OCR-like corruption propagates through the evaluation stack.
+
+#### Step 3.5.1 — Controlled degradation framework
+
+Implemented degradation primitives include:
+
+- character substitution
+- character deletion
+- character insertion
+- whitespace corruption
+- punctuation corruption
+- identifier corruption
+
+The framework supports deterministic severity-controlled transformations and records changed positions.
+
+The design deliberately separates:
+
+```text
+reference text
+    ↓
+controlled degradation
+    ↓
+degraded text
+    ↓
+evaluation
+```
+
+This makes the robustness experiment reproducible and allows individual degradation behaviors to be tested independently.
+
+#### Step 3.5.2 — Measurable robustness experiment
+
+The current robustness experiment contains:
+
+```text
+3 synthetic documents
+×
+6 degradation types
+×
+5 severity levels
+=
+90 cases
+```
+
+Severity levels:
+
+```text
+0.0
+0.25
+0.5
+0.75
+1.0
+```
+
+The experiment therefore contains:
+
+- 90 total cases
+- 18 zero-severity control cases
+- 72 degraded cases
+
+Each case measures multiple evaluation layers:
+
+```text
+controlled degradation
+        ↓
+degraded text
+        ↓
+CER / WER
+        ↓
+critical-field evaluation
+        ↓
+faithfulness
+        ↓
+changed-position analysis
+```
+
+#### Control validation
+
+The 18 zero-severity control cases establish that:
+
+- CER = 0
+- WER = 0
+- critical-field accuracy = 1.0
+- faithfulness CER = 0
+- no text positions are changed
+
+This provides a deterministic baseline for the experiment.
+
+#### Current aggregate robustness results
+
+| Degradation | Mean CER | Mean WER | Mean Field Accuracy |
+|---|---:|---:|---:|
+| Character substitution | 0.4282 | 0.5158 | 0.4182 |
+| Character deletion | 0.5022 | 0.5158 | 0.4182 |
+| Character insertion | 0.4264 | 0.5128 | 0.4182 |
+| Whitespace corruption | 0.0675 | 0.5896 | 0.4545 |
+| Punctuation corruption | 0.0228 | 0.1342 | 0.5939 |
+| Identifier corruption | 0.0013 | 0.0086 | 0.8909 |
+
+These results demonstrate why OCR evaluation should not rely on a single aggregate metric.
+
+For example:
+
+- whitespace corruption produces relatively low CER but the highest WER
+- punctuation corruption has low CER/WER but still reduces field accuracy
+- identifier corruption produces very low aggregate text error while still causing measurable critical-field degradation
+
+This illustrates that small text-level changes can have disproportionate impact on structured document information.
+
+#### Robustness experiment scope
+
+The robustness experiment is intentionally limited to the controlled synthetic development documents.
+
+This is important because synthetic degradation requires known reference text.
+
+Assignment(Real Users)-provided documents are therefore not artificially assigned ground truth merely to make the experiment possible.
 
 ---
 
 ## Current validation baseline
 
-The synthetic development dataset contains three controlled documents:
+The project contains three controlled synthetic documents:
 
 | Document | Difficulty | Critical-field accuracy |
 |---|---|---:|
@@ -196,7 +404,7 @@ The synthetic development dataset contains three controlled documents:
 
 The current synthetic OCR → extraction → critical-field evaluation path successfully evaluates all 11 critical fields for each document.
 
-> **Important:** These results are a validation of the controlled synthetic development dataset. They are **not** a claim of production OCR accuracy or real-world land-record performance.
+> **Important:** These results validate the controlled synthetic development dataset. They are not claims of production OCR accuracy or real-world land-record performance.
 
 The synthetic documents intentionally include conditions such as:
 
@@ -211,7 +419,7 @@ The synthetic documents intentionally include conditions such as:
 
 ## Test suite
 
-The project currently maintains a regression suite covering:
+The project maintains a regression suite covering:
 
 - OCR pipeline utilities
 - PDF rendering
@@ -224,12 +432,41 @@ The project currently maintains a regression suite covering:
 - critical-field extraction
 - critical-field evaluation
 - adversarial extraction behavior
+- faithfulness comparison
+- faithfulness reporting
+- controlled OCR degradation
+- robustness experiment matrix
+- robustness reporting
+- synthetic-only robustness scope
 
-Current baseline:
+Current full-suite baseline:
 
-**52 tests passing**
+**140 passed**
 
-A warning from the Paddle runtime regarding the optional `ccache` dependency may appear during the test suite; it does not currently cause test failures.
+The robustness experiment has 16 dedicated regression tests covering:
+
+- degradation configuration
+- synthetic document discovery
+- 90-case matrix structure
+- degradation coverage
+- severity coverage
+- control behavior
+- text changes
+- positive error generation
+- changed-position tracking
+- result contract
+- summary consistency
+- report readability
+- JSON serialization
+- assignment-data exclusion
+
+A warning from the Paddle runtime regarding the optional `ccache` dependency may appear during the test suite. It does not currently cause test failures.
+
+Example full-suite command:
+
+```bash
+python -m pytest -q
+```
 
 ---
 
@@ -249,15 +486,17 @@ data/development/synthetic_documents/
 
 The synthetic dataset is version-controlled because it is intentionally created for reproducible development and regression testing.
 
-Employer-provided documents are kept separately under:
+Assignment(Real Users)-provided assignment documents are kept separately under:
 
 ```text
 data/assignment/
 ```
 
-These documents are **not committed to the repository**.
+These documents are not committed to the repository.
 
-They must be treated as external evaluation material and should not be represented as synthetic or employer-provided samples interchangeably.
+Generated assignment OCR outputs are also kept outside version control.
+
+Generated evaluation outputs are treated as local artifacts unless explicitly selected as repository documentation artifacts.
 
 ---
 
@@ -269,27 +508,36 @@ ocr_document_evaluation/
 │   └── default.json
 ├── data/
 │   ├── development/          # synthetic development data
-│   └── assignment/           # employer-provided documents; not committed
+│   └── assignment/           # Assignment(Real Users)-provided documents; not committed
 ├── docs/
 ├── outputs/
 │   ├── benchmarks/           # selected benchmark artifacts
+│   ├── assignment/           # generated real-data evaluation; ignored
 │   ├── raw/                  # generated OCR outputs; ignored
-│   └── reports/              # generated reports; ignored
+│   └── robustness/           # generated robustness reports; ignored
 ├── scripts/
+│   ├── analyze_real_ocr.py
 │   ├── benchmark_ocr.py
 │   ├── environment_check.py
 │   ├── evaluate_fields.py
+│   ├── evaluate_real_data.py
+│   ├── inspect_real_ocr.py
 │   ├── render_documents.py
 │   ├── run_ocr.py
-│   └── validate_extraction.py
+│   ├── run_robustness_experiment.py
+│   ├── validate_extraction.py
+│   └── validate_ground_truth.py
 ├── src/
 │   ├── ocr/
 │   │   ├── base.py
 │   │   └── paddleocr_adapter.py
 │   └── ocr_eval/
 │       ├── critical_fields.py
+│       ├── degradation.py
 │       ├── edit_distance.py
 │       ├── extraction.py
+│       ├── faithfulness.py
+│       ├── faithfulness_reporting.py
 │       ├── metrics.py
 │       ├── normalization.py
 │       ├── pdf_utils.py
@@ -331,7 +579,12 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-The project also maintains `pyproject.toml` and `uv.lock` for reproducible environment management.
+The project also maintains:
+
+- `pyproject.toml`
+- `uv.lock`
+
+for reproducible environment management.
 
 PaddlePaddle may require a platform-specific CPU or GPU installation.
 
@@ -421,7 +674,7 @@ The evaluator reports:
 
 ## Validate OCR → extraction → evaluation
 
-For development validation, the repository includes:
+For development validation:
 
 ```powershell
 python scripts\validate_extraction.py
@@ -430,6 +683,71 @@ python scripts\validate_extraction.py
 This runs the critical-field extraction and evaluation path against the available synthetic development documents.
 
 The validation output is intended to make field-level failures visible rather than reducing evaluation to a single opaque score.
+
+---
+
+## Validate synthetic ground truth
+
+The repository includes a ground-truth validation script for checking the structure and consistency of the synthetic development dataset:
+
+```powershell
+python scripts\validate_ground_truth.py
+```
+
+This validation is intentionally focused on the synthetic dataset where authoritative reference material is available.
+
+---
+
+## Run real-data OCR evaluation
+
+After OCR outputs have been generated locally for assignment documents:
+
+```powershell
+python scripts\evaluate_real_data.py
+```
+
+The script generates machine-readable and human-readable OCR-quality reports under:
+
+```text
+outputs/assignment/
+```
+
+These reports contain observable OCR signals but do not claim CER/WER or field accuracy where authoritative assignment ground truth is unavailable.
+
+---
+
+## Run robustness experiment
+
+Run the complete controlled synthetic robustness experiment:
+
+```powershell
+python scripts\run_robustness_experiment.py
+```
+
+The current experiment evaluates:
+
+**90 cases**
+
+and writes:
+
+```text
+outputs/robustness/robustness_results.json
+outputs/robustness/robustness_results.txt
+```
+
+The generated outputs are local evaluation artifacts and are not required to be committed to the repository.
+
+Run the dedicated regression tests:
+
+```powershell
+python -m pytest tests\test_robustness_experiment.py -v
+```
+
+Run the complete test suite:
+
+```powershell
+python -m pytest -q
+```
 
 ---
 
@@ -445,7 +763,9 @@ OCR engines are isolated behind adapters. Evaluation operates on a stable intern
 
 ### 3. Preserve meaningful errors
 
-Identifiers, dates, punctuation, and numeric values can carry legal or operational significance. The evaluator should not silently repair OCR output.
+Identifiers, dates, punctuation, and numeric values can carry legal or operational significance.
+
+The evaluator should not silently repair OCR output.
 
 ### 4. Missing is different from wrong
 
@@ -455,62 +775,97 @@ A missing critical field is explicitly represented and reported rather than bein
 
 CER/WER and field accuracy provide useful summaries, but field-level failures and error categories are necessary to understand document-processing risk.
 
-### 6. Synthetic results are controlled validation
+### 6. Faithfulness is a separate evaluation dimension
+
+A downstream output can be fluent while still altering or omitting information from the source.
+
+Faithfulness is therefore evaluated separately from OCR recognition quality.
+
+### 7. Controlled degradation should be reproducible
+
+Robustness experiments use deterministic transformations, explicit severity levels, and known synthetic references.
+
+### 8. Synthetic results are controlled validation
 
 Synthetic documents are useful for deterministic regression testing, but performance on them must not be presented as evidence of production performance.
 
-### 7. Reproducibility matters
+### 9. Real-data evaluation must not manufacture ground truth
 
-Configuration, test cases, benchmark artifacts, and development datasets are kept structured so that evaluation behavior can be reproduced and compared over time.
+When authoritative assignment transcriptions or field labels are unavailable, the framework reports observable OCR-quality signals rather than inventing CER/WER or field accuracy.
+
+### 10. Missing information is itself an evaluation constraint
+
+The absence of ground truth is explicitly represented in the evaluation workflow rather than hidden.
+
+### 11. Reproducibility matters
+
+Configuration, test cases, benchmark artifacts, and development datasets are kept structured so evaluation behavior can be reproduced and compared over time.
+
+### 12. Test the evaluator, not only the happy path
+
+Adversarial tests intentionally exercise:
+
+- corrupted identifiers
+- missing fields
+- misleading nearby annotations
+- multiple sellers
+- punctuation changes
+- whitespace changes
+- downstream text alterations
+- controlled OCR degradation
+
+The goal is to ensure that the evaluation framework exposes meaningful failures rather than accidentally correcting them.
+
+---
+
+## Evaluation strategy
+
+The project is organized around the major evaluation dimensions relevant to OCR/document-AI systems:
+
+| Evaluation area | Current evidence |
+|---|---|
+| Ground Truth Quality | Synthetic ground-truth validation + controlled development dataset |
+| Metrics & Automation | CER, WER, edit distance, field-level evaluation, faithfulness |
+| Robustness Testing | 90-case controlled degradation experiment |
+| Error Analysis & Reporting | Metric reports + field failures + robustness summaries; next focus |
+| Testing Strategy & Thinking | Layered regression suite, adversarial tests, deterministic experiments, separation of real and synthetic data |
+
+The framework intentionally avoids collapsing these dimensions into a single score.
 
 ---
 
 ## Next milestones
 
-### Step 3.3 — Faithfulness / rewrite detection
+### Step 3.6 — Error analysis and reporting
 
-Evaluate whether downstream document-AI output faithfully represents the source OCR/document content and detect unsupported rewriting or altered critical information.
+The next highest-value implementation layer is to turn the existing evaluation outputs into concise evaluator-facing error analysis.
 
-### Step 3.4 — Controlled robustness degradation
+Planned focus:
 
-Introduce controlled perturbations such as:
+- representative OCR error examples
+- error categorization
+- critical-field failure analysis
+- text-level versus field-level impact
+- degradation-specific failure patterns
+- consolidated machine-readable reporting
+- concise human-readable reporting
+- risk interpretation
 
-- character substitutions
-- dropped characters
-- whitespace corruption
-- numeric corruption
-- identifier punctuation corruption
-- OCR confidence degradation
-- layout/annotation interference
+This stage should reuse the existing metrics, extraction, faithfulness, and robustness infrastructure rather than introducing unnecessary new abstractions.
 
-Measure whether the evaluation system detects the resulting failures.
+### Step 3.7 — Final evaluation hardening
 
-### Step 3.5 — Dataset-level evaluation
+After error analysis, prioritize the remaining evaluation criteria:
 
-Move from individual-document checks to aggregate evaluation across datasets, including:
+- broader regression coverage where evidence identifies a real gap
+- production-oriented failure handling
+- reproducibility checks
+- configuration validation
+- clear failure attribution
+- final evaluator-facing documentation
+- final end-to-end workflow validation
 
-- field-level accuracy
-- CER/WER distributions
-- failure rates by field
-- failure rates by difficulty
-- error-category breakdowns
-- missing-field rates
-
-### Step 3.6 — Reporting and automation
-
-Add structured Excel/HTML reporting and an automated evaluation workflow suitable for repeated regression testing.
-
-### Step 3.7 — Assignment dataset validation
-
-Run the complete evaluation workflow against the employer-provided samples while keeping those documents outside the repository.
-
-The final evaluation should explicitly distinguish:
-
-- OCR errors
-- extraction errors
-- field-evaluation errors
-- missing information
-- potentially unsafe or misleading outputs
+The project should favor evidence-producing improvements over additional architecture as it approaches final evaluation.
 
 ---
 
@@ -527,10 +882,56 @@ The final evaluation should explicitly distinguish:
 | Critical-field evaluation | Complete |
 | Adversarial extraction tests | Complete |
 | Synthetic end-to-end validation | Complete |
-| Faithfulness / rewrite detection | Next |
-| Robustness degradation | Planned |
-| Dataset-level reporting | Planned |
-| Excel/HTML reporting | Planned |
-| Assignment-data evaluation | Pending |
+| Faithfulness / rewrite detection | Complete |
+| Faithfulness reporting | Complete |
+| Real-data OCR evaluation | Complete for available assignment material |
+| Synthetic ground-truth validation | Complete |
+| Controlled degradation framework | Complete |
+| 90-case robustness experiment | Complete |
+| Robustness regression tests | Complete |
+| Error analysis / consolidated reporting | Next |
+| Final evaluation hardening | Planned |
 
-The project is intentionally being developed incrementally so that each evaluation layer can be tested independently before being incorporated into the full document-evaluation workflow.
+---
+
+## Repository hygiene
+
+The following are intentionally excluded from version control:
+
+```text
+.venv/
+.pytest_cache/
+__pycache__/
+outputs/raw/
+outputs/assignment/
+outputs/robustness/
+data/assignment/
+```
+
+In particular, Assignment(Real Users)-provided assignment documents must remain outside the repository.
+
+Synthetic development documents under `data/development/` may be version-controlled because they are intentionally created for reproducible testing.
+
+---
+
+## Final principle
+
+The objective of this project is not simply to demonstrate that an OCR engine can produce text.
+
+It is to demonstrate that an evaluation system can answer:
+
+```text
+How accurate is the OCR?
+        ↓
+Which text errors occurred?
+        ↓
+Which important fields were affected?
+        ↓
+Did downstream output remain faithful?
+        ↓
+How does performance degrade under controlled corruption?
+        ↓
+What failure modes create the greatest document-processing risk?
+```
+
+A reliable document-AI evaluation system should make those failures measurable, reproducible, explainable, and difficult to hide behind aggregate accuracy scores.
