@@ -23,8 +23,8 @@ docs/
 │   ├── 3.3_faithfulness.md
 │   ├── 3.4_real_data_evaluation.md
 │   ├── 3.5_robustness.md
-│   └── 3.6_error_analysis.md
-│
+│   ├── 3.6_error_analysis.md
+│   └── 3.7_final_evaluation.md
 ├── architecture.md
 │
 └── evaluation/

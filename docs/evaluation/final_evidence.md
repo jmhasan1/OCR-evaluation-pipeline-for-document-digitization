@@ -35,7 +35,7 @@ scripts/run_evaluation.py
 | Severity levels | 5 |
 | Real-data documents | 2 |
 | Authoritative real-data ground truth | False |
-| Full test suite | 165 passed |
+| Full test suite | 189 passed |
 | Runner-focused tests | 24 passed |
 
 The final runner report records Git revision `9a78276` for the evaluated repository state.
@@ -211,7 +211,7 @@ A production implementation should maintain:
 
 The final repository test suite contains:
 
-**165 passed, 1 warning**
+**189 passed, 1 warning**
 
 The focused final-runner test suite contains:
 
