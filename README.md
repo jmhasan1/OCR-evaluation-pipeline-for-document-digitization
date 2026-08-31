@@ -12,7 +12,7 @@ The project is designed around **evaluation rigor rather than OCR accuracy alone
 
 ## Current milestone
 
-**Step 3.6 — Error Analysis & Reporting**
+**Step 3.7 — Final Evaluation & Evaluator-Facing Evidence**
 
 The project now has an evaluation stack covering:
 
@@ -578,7 +578,7 @@ The project maintains a regression suite covering:
 
 Current full-suite baseline:
 
-**161 passed**
+**189 passed, 1 warning**
 
 The robustness experiment has 16 dedicated regression tests covering:
 
@@ -1003,19 +1003,44 @@ The framework intentionally avoids collapsing these dimensions into a single sco
 
 ## Next milestones
 
-### Step 3.7 — Final evaluation hardening
+### Step 3.7 — Final evaluation & evaluator-facing evidence
 
-After error analysis, prioritize the remaining evaluation criteria:
+The final evaluation layer is complete. A single runner consolidates the existing evaluation layers without duplicating the core architecture:
 
-- broader regression coverage where evidence identifies a real gap
-- production-oriented failure handling
-- reproducibility checks
-- configuration validation
-- clear failure attribution
-- final evaluator-facing documentation
-- final end-to-end workflow validation
+```powershell
+python scripts\run_evaluation.py
+```
 
-The project should favor evidence-producing improvements over additional architecture as it approaches final evaluation.
+The runner produces:
+
+```text
+outputs/evaluation/evaluation_report.json
+outputs/evaluation/evaluation_report.txt
+```
+
+The final consolidated evidence includes:
+
+- synthetic CER/WER and per-document results
+- critical-field consequences
+- faithfulness evidence
+- the 90-case robustness experiment
+- real-data OCR-quality observations
+- categorized error analysis
+- evaluator findings and production-relevant interpretation
+- limitations and ground-truth boundaries
+
+Final validation baseline:
+
+- 3 synthetic development documents
+- mean CER: 0.0249
+- mean WER: 0.0387
+- mean critical-field accuracy: 1.0000
+- mean faithfulness CER: 0.0249
+- 90 robustness cases
+- 2 real-data documents evaluated using observable OCR-quality signals only
+- 189 automated tests passing
+
+Generated reports remain local artifacts and are excluded from version control. The evaluator-facing methodology and final evidence are documented under `docs/evaluation/`.
 
 ---
 
@@ -1040,7 +1065,7 @@ The project should favor evidence-producing improvements over additional archite
 | 90-case robustness experiment | Complete |
 | Robustness regression tests | Complete |
 | Error analysis / consolidated reporting | Complete |
-| Final evaluation hardening | Planned |
+| Final evaluation runner | Complete |
 
 ---
 
