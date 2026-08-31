@@ -32,3 +32,5 @@ data/assignment
 outputs/raw/
 outputs/reports/
 outputs/assignment/
+outputs/robustness
+outputs/evaluation
