@@ -2,17 +2,17 @@
 
 A development-first evaluation framework for OCR and document-AI systems handling scanned official documents such as sale deeds and land records.
 
-The project is designed around **evaluation rigor rather than OCR accuracy alone**, with emphasis on meaningful metrics, critical-field correctness, faithfulness, controlled robustness testing, reproducibility, automation, and awareness of document-processing risks.
+The project is designed around **evaluation rigor rather than OCR accuracy alone**, with emphasis on meaningful metrics, critical-field correctness, faithfulness, controlled robustness testing, reproducibility, automation, error analysis, and awareness of document-processing risks.
 
 > **Important:** `data/development/` contains fictional synthetic documents created only to develop and test the pipeline. They are not real land records.
->
+
 > **Important:** Assignment(Real Users)-provided assignment documents are kept outside version control and are never treated as synthetic ground truth.
 
 ---
 
 ## Current milestone
 
-**Step 3.5 — Robustness testing and measurable degradation analysis**
+**Step 3.6 — Error Analysis & Reporting**
 
 The project now has an evaluation stack covering:
 
@@ -35,14 +35,19 @@ controlled degradation
     ↓
 robustness analysis
     ↓
-structured reports
-```
+error categorization
+    ↓
+representative failure analysis
+    ↓
+consolidated reports
 
 The implementation deliberately keeps OCR, extraction, evaluation, degradation, and reporting separated so that failures can be attributed to the appropriate stage.
+---
 
 ---
 
 ## Implemented
+
 
 ### Step 2 — Project foundation + OCR pipeline
 
@@ -95,7 +100,7 @@ JSON
 ```
 
 The OCR layer produces a stable internal representation containing document metadata, page text, detected regions, confidence information where available, and execution metadata.
-
+---
 ---
 
 ## Step 3 — Evaluation framework
@@ -392,6 +397,133 @@ Assignment(Real Users)-provided documents are therefore not artificially assigne
 
 ---
 
+## Step 3.6 — Error Analysis & Reporting
+
+The project now consolidates the outputs of the existing evaluation layers into an evaluator-facing error-analysis report.
+
+The implementation intentionally does not introduce another accuracy metric or duplicate the core evaluation architecture.
+
+Instead, it consumes the existing:
+
+- robustness results
+- CER/WER evidence
+- field-level evaluation
+- faithfulness evaluation
+- real-data OCR-quality observations
+
+and turns them into categorized, interpretable evidence.
+
+### Error categorization
+
+Supported error categories include:
+
+| Category | Purpose |
+|---|---|
+| `character_level` | Character substitutions, insertions, and deletions |
+| `whitespace` | Token-boundary and spacing corruption |
+| `punctuation` | Punctuation-related corruption |
+| `identifier` | Structured identifier corruption |
+| `field_level` | Critical-field extraction/evaluation failures |
+| `faithfulness` | Downstream differences from source OCR |
+| `real_data_observation` | Observable real-data OCR quality signals |
+
+The categorization is deliberately consequence-oriented rather than treating every textual difference as equally important.
+
+### Representative failure examples
+
+The consolidated report selects representative cases from the existing robustness evidence.
+
+Each representative example records available evidence such as:
+
+- document
+- degradation type
+- severity
+- CER where available
+- WER where available
+- field accuracy
+- faithfulness CER
+- changed positions where available
+- critical-field consequences
+- evaluator-facing interpretation
+
+The report does not invent metrics that are unavailable in the underlying evaluation artifact.
+
+This keeps the error analysis traceable to existing evidence.
+
+### Critical-field consequences
+
+The error-analysis layer explicitly connects OCR degradation with structured information loss.
+
+This is important because:
+
+```text
+small text error
+      ↓
+may produce
+      ↓
+large field-level consequence
+```
+
+For example, a small punctuation or identifier change may have limited effect on aggregate CER/WER while changing the meaning or validity of a registration number, survey number, or other structured identifier.
+
+The evaluator therefore sees not only how much text changed, but also what information may have been affected.
+
+### Real-data observations
+
+Real assignment documents are included only as observable OCR-quality evidence.
+
+The consolidated report can surface:
+
+- page counts
+- character and word counts
+- OCR confidence
+- low-confidence pages
+- low-confidence regions
+- near-empty pages
+- processing observations
+
+The report explicitly preserves the limitation that the assignment documents do not have authoritative ground-truth transcriptions or critical-field labels.
+
+Therefore:
+
+```text
+Real assignment data
+        ↓
+observable OCR quality
+        ≠
+verified transcription accuracy
+```
+
+Assignment documents are never presented as synthetic ground truth.
+
+### Consolidated evaluator-facing report
+
+The error-analysis script generates:
+
+```text
+outputs/reports/error_analysis.json
+outputs/reports/error_analysis.txt
+```
+
+The JSON report provides machine-readable evidence.
+
+The text report provides a concise human-readable interpretation suitable for evaluator review.
+
+The report includes:
+
+- evaluation scope
+- error categories
+- robustness-case counts
+- representative robustness failures
+- critical-field consequences
+- real-data observations
+- evaluator findings
+- limitations
+
+The report is designed to make the existing evidence easier to inspect without changing the underlying evaluation methodology.
+
+---
+
 ## Current validation baseline
 
 The project contains three controlled synthetic documents:
@@ -438,10 +570,15 @@ The project maintains a regression suite covering:
 - robustness experiment matrix
 - robustness reporting
 - synthetic-only robustness scope
+- error categorization
+- representative failure analysis
+- critical-field consequence analysis
+- real-data observation reporting
+- consolidated error-analysis reporting
 
 Current full-suite baseline:
 
-**140 passed**
+**161 passed**
 
 The robustness experiment has 16 dedicated regression tests covering:
 
@@ -459,6 +596,15 @@ The robustness experiment has 16 dedicated regression tests covering:
 - report readability
 - JSON serialization
 - assignment-data exclusion
+
+The Step 3.6 reporting layer is additionally covered by tests for:
+
+- error categorization
+- representative failure selection
+- critical-field consequence reporting
+- real-data observation handling
+- consolidated report structure
+- machine-readable and human-readable report generation
 
 A warning from the Paddle runtime regarding the optional `ccache` dependency may appear during the test suite. It does not currently cause test failures.
 
@@ -514,8 +660,10 @@ ocr_document_evaluation/
 │   ├── benchmarks/           # selected benchmark artifacts
 │   ├── assignment/           # generated real-data evaluation; ignored
 │   ├── raw/                  # generated OCR outputs; ignored
+│   ├── reports/              # generated error-analysis reports; ignored
 │   └── robustness/           # generated robustness reports; ignored
 ├── scripts/
+│   ├── analyze_errors.py
 │   ├── analyze_real_ocr.py
 │   ├── benchmark_ocr.py
 │   ├── environment_check.py
@@ -698,6 +846,25 @@ This validation is intentionally focused on the synthetic dataset where authorit
 
 ---
 
+## Run error analysis and reporting
+
+Run the consolidated evaluator-facing error-analysis report:
+
+```powershell
+python scripts\analyze_errors.py
+```
+
+The script generates:
+
+```text
+outputs/reports/error_analysis.json
+outputs/reports/error_analysis.txt
+```
+
+The generated reports summarize existing evaluation evidence without introducing another accuracy metric.
+
+---
+
 ## Run real-data OCR evaluation
 
 After OCR outputs have been generated locally for assignment documents:
@@ -827,7 +994,7 @@ The project is organized around the major evaluation dimensions relevant to OCR/
 | Ground Truth Quality | Synthetic ground-truth validation + controlled development dataset |
 | Metrics & Automation | CER, WER, edit distance, field-level evaluation, faithfulness |
 | Robustness Testing | 90-case controlled degradation experiment |
-| Error Analysis & Reporting | Metric reports + field failures + robustness summaries; next focus |
+| Error Analysis & Reporting | Error categorization, representative failures, critical-field consequences, consolidated reports|
 | Testing Strategy & Thinking | Layered regression suite, adversarial tests, deterministic experiments, separation of real and synthetic data |
 
 The framework intentionally avoids collapsing these dimensions into a single score.
@@ -835,23 +1002,6 @@ The framework intentionally avoids collapsing these dimensions into a single sco
 ---
 
 ## Next milestones
-
-### Step 3.6 — Error analysis and reporting
-
-The next highest-value implementation layer is to turn the existing evaluation outputs into concise evaluator-facing error analysis.
-
-Planned focus:
-
-- representative OCR error examples
-- error categorization
-- critical-field failure analysis
-- text-level versus field-level impact
-- degradation-specific failure patterns
-- consolidated machine-readable reporting
-- concise human-readable reporting
-- risk interpretation
-
-This stage should reuse the existing metrics, extraction, faithfulness, and robustness infrastructure rather than introducing unnecessary new abstractions.
 
 ### Step 3.7 — Final evaluation hardening
 
@@ -889,7 +1039,7 @@ The project should favor evidence-producing improvements over additional archite
 | Controlled degradation framework | Complete |
 | 90-case robustness experiment | Complete |
 | Robustness regression tests | Complete |
-| Error analysis / consolidated reporting | Next |
+| Error analysis / consolidated reporting | Complete |
 | Final evaluation hardening | Planned |
 
 ---
@@ -904,6 +1054,7 @@ The following are intentionally excluded from version control:
 __pycache__/
 outputs/raw/
 outputs/assignment/
+outputs/reports/
 outputs/robustness/
 data/assignment/
 ```
