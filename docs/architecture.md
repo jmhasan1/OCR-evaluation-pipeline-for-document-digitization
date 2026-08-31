@@ -1,40 +1,89 @@
-# Architecture — Step 2
+# Architecture
 
-## Principle
+## Current system
 
-Separate **OCR execution** from **evaluation**.
-
-The OCR adapter converts engine-specific results into a stable internal representation:
+The project separates OCR execution, evaluation, robustness, and reporting.
 
 ```text
-PDF / images
-    |
-    v
-PDF renderer
-    |
-    v
-OCR adapter (PaddleOCR)
-    |
-    v
-OCRDocument
-  - page text
-  - regions
-  - confidence
-  - bounding boxes
-    |
-    v
-Evaluation layer (next milestone)
-  - normalization
-  - CER/WER
-  - critical fields
-  - faithfulness
-  - robustness
+                    PDF / images
+                         │
+                         ▼
+                  PDF/image utilities
+                         │
+                         ▼
+                 OCR adapter boundary
+                         │
+                         ▼
+                   PaddleOCR adapter
+                         │
+                         ▼
+                    OCRDocument
+                  ┌──────┴──────┐
+                  │             │
+              page text      regions
+                  │          confidence
+                  │          bounding boxes
+                  └──────┬──────┘
+                         ▼
+                    Evaluation
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+       CER/WER       critical fields  faithfulness
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+                controlled degradation
+                         │
+                         ▼
+                    robustness
+                         │
+                         ▼
+                   error analysis
+                         │
+                         ▼
+                     reports
 ```
 
-## Why retain regions and confidence?
+## Boundaries
 
-The assignment asks for production-oriented confidence-based human review. Keeping region-level confidence and bounding boxes now means the later evaluator can investigate critical fields and route uncertain cases without changing the OCR runner's output contract.
+### `src/ocr/`
 
-## Why render PDFs ourselves?
+Engine integration.
 
-The evaluation must compare OCR against page-level source material and later generate controlled degradations. Converting PDFs to deterministic PNG pages gives the pipeline a stable image input boundary.
+### `src/ocr_eval/`
+
+Reusable evaluation primitives:
+
+- schema
+- normalization
+- edit distance
+- metrics
+- extraction
+- critical fields
+- faithfulness
+- degradation
+- PDF utilities
+- document pipeline
+
+### `scripts/`
+
+Workflow orchestration and CLI entry points.
+
+### `tests/`
+
+Executable contracts and regression coverage.
+
+## Design principle
+
+The evaluation framework should remain usable if the OCR engine changes. Conversely, OCR execution should not need to know how CER/WER, field accuracy, robustness, or error analysis are calculated.
+
+## Data boundary
+
+Synthetic development data supplies authoritative ground truth.
+
+Assignment data is treated as real input and remains outside version control.
+
+## Reporting boundary
+
+Reports consume structured outputs from existing evaluation layers. Reporting does not redefine the underlying accuracy metrics.
