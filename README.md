@@ -8,48 +8,11 @@ The project is designed around **evaluation rigor rather than OCR accuracy alone
 
 > **Important:** Assignment(Real Users)-provided assignment documents are kept outside version control and are never treated as synthetic ground truth.
 
+--
+---
 ---
 
-## Current milestone
-
-**Step 3.7 — Final Evaluation & Evaluator-Facing Evidence**
-
-The project now has an evaluation stack covering:
-
-```text
-PDF / image
-    ↓
-OCR
-    ↓
-normalized OCR representation
-    ↓
-text metrics (CER / WER)
-    ↓
-critical-field extraction
-    ↓
-field-level evaluation
-    ↓
-faithfulness comparison
-    ↓
-controlled degradation
-    ↓
-robustness analysis
-    ↓
-error categorization
-    ↓
-representative failure analysis
-    ↓
-consolidated reports
-
-The implementation deliberately keeps OCR, extraction, evaluation, degradation, and reporting separated so that failures can be attributed to the appropriate stage.
----
-
----
-
-## Implemented
-
-
-### Step 2 — Project foundation + OCR pipeline
+## Step 2 — Project foundation + OCR pipeline
 
 Implemented:
 
@@ -613,6 +576,46 @@ Example full-suite command:
 ```bash
 python -m pytest -q
 ```
+### Step 3.7 — Final evaluation & evaluator-facing evidence
+
+The final evaluation layer is complete. A single runner consolidates the existing evaluation layers without duplicating the core architecture:
+
+```powershell
+python scripts\run_evaluation.py
+```
+
+The runner produces:
+
+```text
+outputs/evaluation/evaluation_report.json
+outputs/evaluation/evaluation_report.txt
+```
+
+The final consolidated evidence includes:
+
+- synthetic CER/WER and per-document results
+- critical-field consequences
+- faithfulness evidence
+- the 90-case robustness experiment
+- real-data OCR-quality observations
+- categorized error analysis
+- evaluator findings and production-relevant interpretation
+- limitations and ground-truth boundaries
+
+Final validation baseline:
+
+- 3 synthetic development documents
+- mean CER: 0.0249
+- mean WER: 0.0387
+- mean critical-field accuracy: 1.0000
+- mean faithfulness CER: 0.0249
+- 90 robustness cases
+- 2 real-data documents evaluated using observable OCR-quality signals only
+- 189 automated tests passing
+
+Generated reports remain local artifacts and are excluded from version control. The evaluator-facing methodology and final evidence are documented under `docs/evaluation/`.
+
+---
 
 ---
 
@@ -1000,47 +1003,6 @@ The project is organized around the major evaluation dimensions relevant to OCR/
 The framework intentionally avoids collapsing these dimensions into a single score.
 
 ---
-
-## Next milestones
-
-### Step 3.7 — Final evaluation & evaluator-facing evidence
-
-The final evaluation layer is complete. A single runner consolidates the existing evaluation layers without duplicating the core architecture:
-
-```powershell
-python scripts\run_evaluation.py
-```
-
-The runner produces:
-
-```text
-outputs/evaluation/evaluation_report.json
-outputs/evaluation/evaluation_report.txt
-```
-
-The final consolidated evidence includes:
-
-- synthetic CER/WER and per-document results
-- critical-field consequences
-- faithfulness evidence
-- the 90-case robustness experiment
-- real-data OCR-quality observations
-- categorized error analysis
-- evaluator findings and production-relevant interpretation
-- limitations and ground-truth boundaries
-
-Final validation baseline:
-
-- 3 synthetic development documents
-- mean CER: 0.0249
-- mean WER: 0.0387
-- mean critical-field accuracy: 1.0000
-- mean faithfulness CER: 0.0249
-- 90 robustness cases
-- 2 real-data documents evaluated using observable OCR-quality signals only
-- 189 automated tests passing
-
-Generated reports remain local artifacts and are excluded from version control. The evaluator-facing methodology and final evidence are documented under `docs/evaluation/`.
 
 ---
 
